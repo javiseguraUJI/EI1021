@@ -195,6 +195,7 @@ public class GestorReservas {
 	 */
 	private void rellenaDiccionarios(JSONArray array) {
         // POR IMPLEMENTAR
+		
 	}
 
 
@@ -209,6 +210,7 @@ public class GestorReservas {
 	 */
 	Sesion buscaSesion(String actividad, DiaSemana dia, long hora) {
         // POR IMPLEMENTAR
+		
         return null; // MODIFICAR
 	}
 
@@ -252,7 +254,28 @@ public class GestorReservas {
 	@SuppressWarnings("unchecked")
 	public JSONObject hazReserva(String codUsuario, String actividad, DiaSemana dia, long hora) {
         // POR IMPLEMENTAR
-        return null; // MODIFICAR
+		//HashMap<DiaSemana, Vector<Sesion>> sesionesSemana;
+		//HashMap<String, Vector<Reserva>> reservas;
+		JSONObject jsonReserva = new JSONObject();
+		Vector<Sesion> sesionesDia = sesionesSemana.get(Diasemana);
+		if (sesionesDia == null) return jsonReserva;
+		
+		Sesion sesiones = sesiones_dia.get(actividad);
+		if (sesiones == null) return jsonReserva;
+		
+		for (Sesion sesion : sesiones) {
+			if (sesion.getHora() == hora && sesion.getPlaza() > 0) {
+				Reserva nuevaReserva = new Reserva(codUsuario, actividad, dia, hora);
+				Vector<Reserva> nuevoVector = new Vector<Reserva>;
+				reservas.computeIfAbsent(codUsuario, nuevoVector);
+				reservas.get(codUsuario).add(nuevaReserva);
+				
+				sesion.setPlazas(sesion.getPlaza() - 1);
+				jsonReserva.put("codReserva", nueva_reserva.getCodReserva());
+				return jsonReserva
+			}
+		}
+        return jsonReserva; // MODIFICAR
 	}
 
 
