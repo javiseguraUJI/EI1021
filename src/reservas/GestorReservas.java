@@ -257,10 +257,10 @@ public class GestorReservas {
 		//HashMap<DiaSemana, Vector<Sesion>> sesionesSemana;
 		//HashMap<String, Vector<Reserva>> reservas;
 		JSONObject jsonReserva = new JSONObject();
-		Vector<Sesion> sesionesDia = sesionesSemana.get(Diasemana);
+		Vector<Sesion> sesionesDia = sesionesSemana.get(dia);
 		if (sesionesDia == null) return jsonReserva;
 		
-		Sesion sesiones = sesiones_dia.get(actividad);
+		Sesion sesiones = sesionesDia.get(actividad);
 		if (sesiones == null) return jsonReserva;
 		
 		for (Sesion sesion : sesiones) {
