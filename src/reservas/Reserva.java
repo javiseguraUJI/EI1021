@@ -44,11 +44,11 @@ public class Reserva implements Serializable {
      */
     public Reserva(JSONObject jsonReserva) {
     	// POR IMPLEMENTAR
-    	this.codReserva = jsonReserva.getLong("codReserva");
-    	this.codUsuario = jsonReserva.getString("codUsuario");
-    	this.actividad = jsonReserva.getString("actividad");
+    	this.codReserva = (long) jsonReserva.get("codReserva");
+    	this.codUsuario = (String) jsonReserva.get("codUsuario");
+    	this.actividad = (String) jsonReserva.get("actividad");
     	this.dia = (DiaSemana) jsonReserva.get("dia");
-    	this.hora = jsonReserva.getLong("hora");
+    	this.hora = (Long) jsonReserva.get("hora");
     }
 
     /**

@@ -33,6 +33,7 @@ public class UsuarioLocal {
         return opcion;
     }
 
+    
     /**
      * Programa principal. Muestra el menú repetidamente y atiende las peticiones del usuario.
      *
@@ -54,13 +55,15 @@ public class UsuarioLocal {
             opcion = menu(teclado);
             switch (opcion) {
                 case 0 -> { // Guardar los datos en el fichero y salir del programa
-                    // POR IMPLEMENTAR
+                    // Llamamos a guardaDatos() y como opcion es igual a 0 se sale del while y finaliza el programa
                 	gestor.guardaDatos();
                 }
 
                 case 1 -> { // Listar los paquetes enviados por el cliente
-                    // POR IMPLEMENTAR
+                    // Obtenemos un JSONArray con los JSONObjects que representan las reservas del usuario
                 	JSONArray jsonArrayReservas = gestor.listaReservasUsuario(codUsuario);
+                	
+                	// Recorremos el JSONArray y mostramos por pantalla la información pedida
                 	int i = 1;
                 	for (Object o : jsonArrayReservas) {
                 		JSONObject jsonReserva = (JSONObject) o;
@@ -71,9 +74,11 @@ public class UsuarioLocal {
                 }
 
                 case 2 -> { // Listar los plazas disponibles de una actividad
-                    // POR IMPLEMENTAR
+                	// Pedimos el nombre de la actividad de la cuál queremos obtener un array con todas sus sesiones disponibles
                 	String nombreActividad = pedirNombreActividad(teclado);
                 	JSONArray jsonArraySesiones= gestor.listaPlazasDisponibles(nombreActividad);
+                	
+                	// Recorremos el JSONArray devuelto con las JSONobjects que representan las sesiones mostrando por pantalla la información necesaria.
                 	int i = 1;
                 	for (Object o : jsonArraySesiones) {
                 		JSONObject jsonSesion = (JSONObject) o;
@@ -84,22 +89,32 @@ public class UsuarioLocal {
                 }
 
                 case 3 -> { // Hacer una reserva
-                    // POR IMPLEMENTAR
-                    String nombreActividad = pedirNombreActividad(teclado);
+                    // Pedimos la información necesaria para realizar la reserva
+                	String nombreActividad = pedirNombreActividad(teclado);
                     DiaSemana dia = DiaSemana.leerDia(teclado);
                     long hora = pedirHora(teclado);
-                	JSONObject jsonReserva = gestor.hazReserva(codUsuario, nombreActividad, dia, hora);
-                	if (jsonReserva.isEmpty()) {
-                		System.out.println("No se ha podido realizar la reserva, información introducida o sin plazas.");
-                	} else {
-                		System.out.println("Reserva realizada con éxito");
-                	}
+                    
+                    // Buscamos si la sesión existe
+                    Sesion sesion = gestor.buscaSesion(nombreActividad, dia, hora);
+                    
+                    if (sesion == null) { // Si no existe, lo indicamos por pantalla y terminamos
+                    	System.out.println("Sesión no encontrada.");
+                    } else { // Si existe intentamos realizar la reserva
+                    	JSONObject jsonReserva = gestor.hazReserva(codUsuario, nombreActividad, dia, hora);
+                    	
+                    	// Si no la podemos realizar, como sabemos que si que existe la sesión, significa que no quedan plazas.
+                    	// Indicamos el resultado y terminamos
+                    	if (jsonReserva.isEmpty()) {
+                    		System.out.println("No se ha podido realizar la reserva, no quedan plazas sin plazas.");
+                    	} else {
+                    		System.out.println("Reserva realizada con éxito. Código: " + jsonReserva.get("codReserva"));
+                    	}
+                    }
                 }
+
                 case 4 -> { // Cambiar de día y hora una reserva
-
-
                     // POR IMPLEMENTAR
-
+                	
 
                 }
                 case 5 -> { // Cancelar una reserva
@@ -117,14 +132,17 @@ public class UsuarioLocal {
     } // fin de main
 
     private static String pedirNombreActividad(Scanner teclado) {
-    	return "";
+    	String actividad;
+    	System.out.println("¿Qué actividad quieres reservar?");
+   		actividad = teclado.nextLine();
+    	return actividad;
     }
     
     private static long pedirHora(Scanner teclado) {
-    	System.out.println("A que hora quieres reservar: ");
-    	long hora  = teclado.nextLong();
+    	long hora;
+    	System.out.println("¿A que hora quieres reservar?\n");
     	do {
-    		System.out.println("Dame una hora correcta: ");
+    		System.out.println("Dame una hora (0-23): ");
     		hora  = teclado.nextLong();
     	} while (hora < 0 || 23 < hora);
     	return hora;
