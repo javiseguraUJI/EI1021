@@ -203,7 +203,7 @@ public class GestorReservas {
 	}
 
 
-	// La hemos creado para evitar repetición de código
+	// Función para evitar repetición de código
 	private void guardaReserva(Reserva reserva) {
 		String codUsuario = reserva.getCodUsuario();
 		
