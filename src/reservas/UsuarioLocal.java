@@ -57,12 +57,14 @@ public class UsuarioLocal {
                 case 0 -> { // Guardar los datos en el fichero y salir del programa
                     // Llamamos a guardaDatos() y como opcion es igual a 0 se sale del while y finaliza el programa
                 	gestor.guardaDatos();
+                	System.out.println("Saliendo del programa...");
+                	System.out.println("Adiós :)");
                 }
 
                 case 1 -> { // Listar los paquetes enviados por el cliente
                     // Obtenemos un JSONArray con los JSONObjects que representan las reservas del usuario
                 	JSONArray jsonArrayReservas = gestor.listaReservasUsuario(codUsuario);
-                	
+
                 	// Recorremos el JSONArray y mostramos por pantalla la información pedida
                 	int i = 1;
                 	for (Object o : jsonArrayReservas) {
@@ -71,6 +73,7 @@ public class UsuarioLocal {
                 		+ "\nEl día " + jsonReserva.get("dia") + " a las " + jsonReserva.get("hora") + ".");
                 		i++;
                 	}
+                	if (i == 1) System.out.println("No tienes reservas realizadas.");
                 }
 
                 case 2 -> { // Listar los plazas disponibles de una actividad
@@ -78,7 +81,7 @@ public class UsuarioLocal {
                 	String nombreActividad = pedirNombreActividad(teclado);
                 	JSONArray jsonArraySesiones= gestor.listaPlazasDisponibles(nombreActividad);
                 	
-                	// Recorremos el JSONArray devuelto con las JSONobjects que representan las sesiones mostrando por pantalla la información necesaria.
+                	// Recorremos el JSONArray devuelto con las JSONobjects que representan las sesiones mostrando por pantalla la información necesaria
                 	int i = 1;
                 	for (Object o : jsonArraySesiones) {
                 		JSONObject jsonSesion = (JSONObject) o;
@@ -88,41 +91,50 @@ public class UsuarioLocal {
                 	}
                 }
 
-                case 3 -> { // Hacer una reserva
+                case 3 -> { // Hacer una reserva !!!!!!! He puesto prints dentro de hazReserva, creo que se puede pero no lo sé seguro
                     // Pedimos la información necesaria para realizar la reserva
                 	String nombreActividad = pedirNombreActividad(teclado);
                     DiaSemana dia = DiaSemana.leerDia(teclado);
-                    long hora = pedirHora(teclado);
+                    long hora = pedirHora(teclado, "¿A qué hora quieres reservar?\n");
                     
-                    // Buscamos si la sesión existe
-                    Sesion sesion = gestor.buscaSesion(nombreActividad, dia, hora);
-                    
-                    if (sesion == null) { // Si no existe, lo indicamos por pantalla y terminamos
-                    	System.out.println("Sesión no encontrada.");
-                    } else { // Si existe intentamos realizar la reserva
-                    	JSONObject jsonReserva = gestor.hazReserva(codUsuario, nombreActividad, dia, hora);
+
+                     // Intentamos realizar la reserva
+                    JSONObject jsonReserva = gestor.hazReserva(codUsuario, nombreActividad, dia, hora);
                     	
-                    	// Si no la podemos realizar, como sabemos que si que existe la sesión, significa que no quedan plazas.
-                    	// Indicamos el resultado y terminamos
-                    	if (jsonReserva.isEmpty()) {
-                    		System.out.println("No se ha podido realizar la reserva, no quedan plazas sin plazas.");
-                    	} else {
-                    		System.out.println("Reserva realizada con éxito. Código: " + jsonReserva.get("codReserva"));
-                    	}
-                    }
+                   	if (!jsonReserva.isEmpty()) {
+                   		System.out.println("Reserva realizada con éxito. Código: " + jsonReserva.get("codReserva"));
+                  	}
                 }
 
                 case 4 -> { // Cambiar de día y hora una reserva
-                    // POR IMPLEMENTAR
+                    // Pedimos la información necesaria para modificar la reserva
+                	long codReserva = pedirCodReserva(teclado, "Introduce el código de la reserva que quieres modificar: ");
+                	DiaSemana dia = DiaSemana.leerDia(teclado);
+                	long hora = pedirHora(teclado, "¿A que hora cambiar tu reserva?\n");
                 	
-
+                	// Intentamos modificarla
+                	JSONObject jsonReserva = gestor.modificaReserva(codUsuario, codReserva, dia, hora);
+                	
+                	if (jsonReserva == null) { // Si no se ha podido modificar, lo indicamos !!! Faltaría mostrar por qué no se ha podido, quizás se puede hacer dentro de GestorReservas
+                		System.out.println("No se ha podido modificar la reserva.");
+                	} else { // Si se ha podido modificar, lo indicamos y mostramos la información de la nueva reserva
+                		System.out.println("Reserva modificada con éxito. Nueva reserva:\n");
+                		System.out.println("Actividad: " + jsonReserva.get("actividad") + " Código: " + jsonReserva.get("codReserva")
+                		+ "\nEl día" + jsonReserva.get("dia") + " a las " + jsonReserva.get("hora") + ".");
+                	}
                 }
                 case 5 -> { // Cancelar una reserva
-                	gestor.cancelaReserva(codUsuario, 0);
-                    // POR IMPLEMENTAR
-
-
-
+                    // Pedimos la información necesaria para eliminar la reserva
+                	long codReserva = pedirCodReserva(teclado, "Introduce el código de la reserva que quieres eliminar: ");
+                	
+                	// Intentamos cancelarla
+                	JSONObject jsonReserva = gestor.cancelaReserva(codUsuario, codReserva);
+                	
+                	if (jsonReserva.isEmpty()) { // Si no se ha podido reservar lo indicar !!! Mirar si podemos mostrar mejor la razón de por qué no se ha podido
+                		System.out.println("No se ha podido eliminar, reserva no existente o no es tuya");
+                	} else { // Si se ha podido eliminar, lo indicamos !!! no creo que sea necesario mostrar la información sobre la reserva eliminada, pero se puede hacer
+                		System.out.println("Reserva eliminada con exito.");
+                	}
                 }
 
             } // fin switch
@@ -131,16 +143,16 @@ public class UsuarioLocal {
 
     } // fin de main
 
-    private static String pedirNombreActividad(Scanner teclado) {
+    private static String pedirNombreActividad(Scanner teclado) { // pide el nombre de la actividad por teclado
     	String actividad;
     	System.out.println("¿Qué actividad quieres reservar?");
    		actividad = teclado.nextLine();
     	return actividad;
     }
     
-    private static long pedirHora(Scanner teclado) {
+    private static long pedirHora(Scanner teclado, String pregunta) { // pide hora por teclado, param pregunta es para reutilizar la función en contextos diferentes
     	long hora;
-    	System.out.println("¿A que hora quieres reservar?\n");
+    	System.out.println(pregunta);
     	do {
     		System.out.println("Dame una hora (0-23): ");
     		hora  = teclado.nextLong();
@@ -148,6 +160,11 @@ public class UsuarioLocal {
     	return hora;
     }
     
-  
+    private static long pedirCodReserva(Scanner teclado, String pregunta) { // pide codReserva por teclado, param pregunta es para reutilizar la función en contextos diferentes
+    	long codReserva;
+    	System.out.println(pregunta);
+    	codReserva = teclado.nextLong();
+    	return codReserva;
+    }
     
 } // fin class

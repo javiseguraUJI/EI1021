@@ -31,8 +31,8 @@ public class Sesion {
      */
     @SuppressWarnings("unchecked")
     public JSONObject toJSON() {
-    		// POR IMPLEMENTAR
-        	JSONOBject jsonSesion = new JSONObject();
+    		// IMPLEMENTADO
+        	JSONObject jsonSesion = new JSONObject();
         	jsonSesion.put("actividad", getActividad());
         	jsonSesion.put("hora", getHora());
         	jsonSesion.put("plazas", getPlazas());

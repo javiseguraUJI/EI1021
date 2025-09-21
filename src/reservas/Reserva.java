@@ -43,11 +43,11 @@ public class Reserva implements Serializable {
      * @param jsonReserva Objeto JSON con la información de la reserva.
      */
     public Reserva(JSONObject jsonReserva) {
-    	// POR IMPLEMENTAR
+    	// IMPLEMENTADO
     	this.codReserva = (long) jsonReserva.get("codReserva");
     	this.codUsuario = (String) jsonReserva.get("codUsuario");
     	this.actividad = (String) jsonReserva.get("actividad");
-    	this.dia = (DiaSemana) jsonReserva.get("dia");
+    	this.dia = DiaSemana.valueOf((String) jsonReserva.get("dia")); // Lo pasamos a enum porque el dia se guarda como String
     	this.hora = (Long) jsonReserva.get("hora");
     }
 
@@ -58,12 +58,14 @@ public class Reserva implements Serializable {
      */
     @SuppressWarnings("unchecked")
     public JSONObject toJSON() {
-    	// POR IMPLEMENTAR
+    	// IMPLEMENTADO
+    	// Guardar un enum (DiaSemana) en JSONObject da problemas para leer reservas.json mejor guardarlo como String
+    	// y tenerlo en cuenta al cargarlo
         JSONObject jsonReserva = new JSONObject();
         jsonReserva.put("codReserva", getCodReserva());
         jsonReserva.put("codUsuario", getCodUsuario());
         jsonReserva.put("actividad", getActividad());
-        jsonReserva.put("dia", getDia());
+        jsonReserva.put("dia", getDia().name());
         jsonReserva.put("hora", getHora());
         return jsonReserva;
     }

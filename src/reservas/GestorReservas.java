@@ -141,20 +141,21 @@ public class GestorReservas {
 	 */
 	@SuppressWarnings("unchecked")
 	private void escribeFichero(FileWriter os) {
-		// POR IMPLEMENTAR
-		JSONObject[] reservas_guardadas =  new JSONObject[];
-		for (Map.Entry<String, Vector<Reserva>> entry : getReservas().entrySet()) {
-			String codUsuario = entry.getKey();
-			Vector<Reserva> reservasUsuario = entry.getValue();
-			for (Reserva reserva : reservasUsuario) {
-				JSONObject jsonReserva = reserva.toJSON()
-				reservas_guardadas.add(jsonReserva);
+		// IMPLEMENTADO
+		JSONArray reservasGuardadas =  new JSONArray();
+		
+		for (Vector<Reserva> reservasUsuario : getReservas().values()) // Recorremos las reservas realizadas de cada usuario
+			for (Reserva reserva : reservasUsuario) {	// Cada reserva
+				JSONObject jsonReserva = reserva.toJSON(); // La transformamos a JSON
+				reservasGuardadas.add(jsonReserva); // y la añadimos a nuestro JSONArray
 			}
-			try {
-				os.write(reservasGuardadas.toJSONString());
-				os.flush();
-			} catch (IOException e) {
-				e.printStackTrace();
+		
+		// Una vez tenemos todas, escribimos nuestro JSONArray en el fichero
+		try {
+			os.write(reservasGuardadas.toJSONString());
+			os.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -194,11 +195,32 @@ public class GestorReservas {
 	 * @param array	JSONArray con los datos de los paquetes
 	 */
 	private void rellenaDiccionarios(JSONArray array) {
-        // POR IMPLEMENTAR
-		
+        // IMPLEMENTADO
+		// Para cada objeto del JSONArray (lo leído de reservas.json), lo casteamos a JSONObject
+		// y construímos una Reserva con este mismo, a su vez lo guardamos en el HashMap reservas
+		for (Object objectReserva : array)
+			guardaReserva(new Reserva((JSONObject) objectReserva));
 	}
 
 
+	// La hemos creado para evitar repetición de código
+	private void guardaReserva(Reserva reserva) {
+		String codUsuario = reserva.getCodUsuario();
+		
+		// Si reservas contiene el código del usuario, añadimos al vector de las reservas la nueva reserva
+		if (reservas.containsKey(codUsuario)) reservas.get(codUsuario).add(reserva);
+		
+		// si no lo contiene, creamos un nuevo vector de reservas, añadimos la reserva al vector, y añadimos la nueva entrada a reservas
+		else {
+			Vector<Reserva> vectorReservasUsuario = new Vector<Reserva>();
+			vectorReservasUsuario.add(reserva);
+			reservas.put(codUsuario, vectorReservasUsuario);
+		}
+	}
+	
+	
+	
+	
 
 	/**
 	 * Busca y devuelve una sesión determinada en función de la actividad, el día y la hora especificados.
@@ -209,9 +231,13 @@ public class GestorReservas {
 	 * @return La sesión encontrada o `null` si no existe una sesión con esos parámetros.
 	 */
 	Sesion buscaSesion(String actividad, DiaSemana dia, long hora) {
-        // POR IMPLEMENTAR
-		
-        return null; // MODIFICAR
+        // IMPLEMENTADO
+		Vector<Sesion> sesionesDia = sesionesSemana.get(dia); // Vector con todas las sesiones que hay ese día
+		for (Sesion sesion : sesionesDia) 
+			// Si la sesión es de la misma actividad y a la misma hora, la hemos encontrado
+			if (sesion.getActividad().equals(actividad) && sesion.getHora() == hora)
+				return sesion;
+		return null;
 	}
 
 
@@ -223,8 +249,14 @@ public class GestorReservas {
 	 */
 	@SuppressWarnings("unchecked")
 	public JSONArray listaReservasUsuario(String codUsuario) {
-        // POR IMPLEMENTAR
-        return null; // MODIFICAR
+        // IMPLEMENTADO
+		JSONArray jsonReservasArray = new JSONArray();
+		Vector<Reserva> vectorReservasUsuario = reservas.get(codUsuario); // Vector con todas las reservas del usuario
+		if (vectorReservasUsuario == null) return jsonReservasArray; // Si el vector es null, no tiene reservas, devolvemos vacío
+		
+		// Si no está vacío, guardamos todas las reservas del vector y devolvemos el JSONArray
+		for (Reserva reserva : vectorReservasUsuario) jsonReservasArray.add(reserva.toJSON());
+        return jsonReservasArray;
 	}
 
 
@@ -253,29 +285,36 @@ public class GestorReservas {
 	 */
 	@SuppressWarnings("unchecked")
 	public JSONObject hazReserva(String codUsuario, String actividad, DiaSemana dia, long hora) {
-        // POR IMPLEMENTAR
-		//HashMap<DiaSemana, Vector<Sesion>> sesionesSemana;
-		//HashMap<String, Vector<Reserva>> reservas;
-		JSONObject jsonReserva = new JSONObject();
-		Vector<Sesion> sesionesDia = sesionesSemana.get(dia);
-		if (sesionesDia == null) return jsonReserva;
+        // IMPLEMENTADO
+		Sesion sesion = buscaSesion(actividad, dia, hora); // Buscamos la sesión
 		
-		Sesion sesiones = sesionesDia.get(actividad);
-		if (sesiones == null) return jsonReserva;
+		// Si la sesión no se encuentra o no quedan plazas, lo indicamos y devolvemos JSONObject vacío
+		if (sesion == null) {
+			System.out.println("Sesión no encontrada.");
+			return new JSONObject();
+		} if (sesion.getPlazas() <= 0) {
+			System.out.println("No quedan plazas para la sesión pedida.");
+			return new JSONObject();
+		}
 		
-		for (Sesion sesion : sesiones) {
-			if (sesion.getHora() == hora && sesion.getPlaza() > 0) {
-				Reserva nuevaReserva = new Reserva(codUsuario, actividad, dia, hora);
-				Vector<Reserva> nuevoVector = new Vector<Reserva>;
-				reservas.computeIfAbsent(codUsuario, nuevoVector);
-				reservas.get(codUsuario).add(nuevaReserva);
-				
-				sesion.setPlazas(sesion.getPlaza() - 1);
-				jsonReserva.put("codReserva", nueva_reserva.getCodReserva());
-				return jsonReserva
+		
+		// Revisamos si existe una reserva de la misma sesión creada por el mismo usuario, si existe, devolvemos JSONObject vacío
+		for (Object reservaUsuario : listaReservasUsuario(codUsuario)) {
+			JSONObject jsonReservaUsuario = (JSONObject) reservaUsuario;
+			if (actividad.equals((String) jsonReservaUsuario.get("actividad"))
+			 &&	dia == DiaSemana.valueOf((String) jsonReservaUsuario.get("dia"))
+			 && hora == (long)	jsonReservaUsuario.get("hora")) {
+				System.out.println("Ya tienes una reserva realizada de esta sesión");
+				return new JSONObject();
 			}
 		}
-        return jsonReserva; // MODIFICAR
+		
+		// Creamos la nueva reserva
+		Reserva reserva = new Reserva(codUsuario, actividad, dia, hora);
+		
+		sesion.setPlazas(sesion.getPlazas() - 1); // Decrementamos el número de plazas
+		guardaReserva(reserva); // Guardamos la reserva en el HashMap reservas
+		return reserva.toJSON();
 	}
 
 
