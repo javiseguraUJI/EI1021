@@ -164,6 +164,7 @@ public class UsuarioLocal {
     	long codReserva;
     	System.out.println(pregunta);
     	codReserva = teclado.nextLong();
+    	teclado.nextLine();
     	return codReserva;
     }
     
