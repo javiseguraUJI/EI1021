@@ -298,14 +298,8 @@ public class GestorReservas {
         // IMPLEMENTADO
 		Sesion sesion = buscaSesion(actividad, dia, hora); // Buscamos la sesión
 		
-		// Si la sesión no se encuentra o no quedan plazas, lo indicamos y devolvemos JSONObject vacío
-		if (sesion == null) {
-			System.out.println("Sesión no encontrada.");
-			return new JSONObject();
-		} if (sesion.getPlazas() <= 0) {
-			System.out.println("No quedan plazas para la sesión pedida.");
-			return new JSONObject();
-		}
+		// Si la sesión no se encuentra o no quedan plazas y devolvemos JSONObject vacío
+		if (sesion == null || sesion.getPlazas() <= 0) return new JSONObject();
 		
 		
 		// Revisamos si existe una reserva de la misma sesión creada por el mismo usuario, si existe, devolvemos JSONObject vacío
@@ -314,7 +308,6 @@ public class GestorReservas {
 			if (actividad.equals((String) jsonReservaUsuario.get("actividad"))
 			 &&	dia == DiaSemana.valueOf((String) jsonReservaUsuario.get("dia"))
 			 && hora == (long)	jsonReservaUsuario.get("hora")) {
-				System.out.println("Ya tienes una reserva realizada de esta sesión");
 				return new JSONObject();
 			}
 		}
