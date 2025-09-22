@@ -120,7 +120,7 @@ public class UsuarioLocal {
                 	} else { // Si se ha podido modificar, lo indicamos y mostramos la información de la nueva reserva
                 		System.out.println("Reserva modificada con éxito. Nueva reserva:\n");
                 		System.out.println("Actividad: " + jsonReserva.get("actividad") + " Código: " + jsonReserva.get("codReserva")
-                		+ "\nEl día" + jsonReserva.get("dia") + " a las " + jsonReserva.get("hora") + ".");
+                		+ "\nEl día " + jsonReserva.get("dia") + " a las " + jsonReserva.get("hora") + ".");
                 	}
                 }
                 case 5 -> { // Cancelar una reserva
